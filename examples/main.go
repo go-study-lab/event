@@ -11,7 +11,7 @@ type User struct {
 	UserName string
 }
 
-func createUser() {
+func PublishCreateUserEvent() {
 	user := &User{
 		UserId:   1,
 		UserName: "KK",
@@ -55,7 +55,8 @@ func RemoveEventListener() {
 }
 
 func main() {
-	createUser()
+
+	PublishCreateUserEvent()
 	HasEventListener()
 	RemoveEventListener()
 }
