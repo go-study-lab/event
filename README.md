@@ -37,7 +37,50 @@ func (dispatcher *eventDispatcher) HasEventListener(e *Event) bool
 func (dispatcher *eventDispatcher) RemoveEventListener(e *Event, l IListener)
 ```
 
-## *Event
+## Event
+Type `Event` is an event wrapper for concrete event data
+```go
+type Event struct {
+    eventName     string
+    eventTime     time.Time
+    concreteEvent IEvent
+    eventType     string
+}
+```
+A concrete event must implements interface `IEvent`
+```go
+type IEvent interface {
+    EventName() string
+}
+```
+
+## Event Methods
+
+### NewEvent
+
+```go
+func NewEvent(concreteEvent IEvent) *Event
+```
+This is a factory method of Event instance.
+
+### OccurredOn
+```go
+func (e *Event) OccurredOn() time.Time
+```
+Return event occurred time.
+
+### EventData
+```go
+func (e *Event) EventData() IEvent
+```
+Return concrete event data.
+
+### EventName
+
+```go
+func (e *Event) EventName() string
+```
+Return name of event.
 
 ## IListener
 

@@ -13,7 +13,7 @@ type IEvent interface {
 type Event struct {
 	eventName     string
 	eventTime     time.Time
-	concreteEvent interface{}
+	concreteEvent IEvent
 	eventType     string
 }
 
@@ -38,7 +38,7 @@ func (e *Event) OccurredOn() time.Time {
 	return e.eventTime
 }
 
-func (e *Event) EventData() interface{} {
+func (e *Event) EventData() IEvent {
 	return e.concreteEvent
 }
 
