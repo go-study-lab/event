@@ -84,4 +84,38 @@ Return name of event.
 
 ## IListener
 
+`IListener` defines behaviors an event listener must implements.
+```go
+type IListener interface {
+    EventHandler() Handler
+    AsyncProcess() bool
+}
+
+type Handler func(e *Event)
+```
+
+### EventHandler Method
+ `EventHandler` returns a handler func for event bound to listener.
+
+Given a listener instance `*listener`, it should provide `EventHandler` like below:
+```go
+func (*listener) EventHandler() event.Handler {
+    return func(e *event.Event) {
+        fmt.Println("Event received")
+    }
+}
+```
+### AsyncProcess
+```go
+func (*listener) AsyncProcess() bool {
+    return false
+}
+```
+If `AsyncProcess` returned false, `event.Handler` func  provided by `EventHandler` would be executed in same goroutine with the event trigger func,
+this means event trigger would be blocked until all his synchronized listener's handler were finished. 
+
+In the contrast `event.Handler` would be executed in other goroutine and event trigger would not
+be blocked to wait listener's completion. 
+
+
 ## Usage Examples

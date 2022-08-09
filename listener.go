@@ -4,6 +4,8 @@ package event
 type Handler func(e *Event)
 
 type IListener interface {
+	// EventHandler
+	// returns a handler func for event bound to listener.
 	EventHandler() Handler
 	// AsyncProcess
 	// return false: Handler func will execute in same goroutine with event trigger func,
