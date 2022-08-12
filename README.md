@@ -6,6 +6,7 @@ A lightweight event dispatcher for go project to implement event driven programm
 ```shell
 go get -u github.com/go-study-lab/event
 ```
+Jump to [Usage Example](https://github.com/go-study-lab/event#usage-examples)
 
 ## Dispatcher Methods
 
@@ -119,3 +120,92 @@ be blocked to wait listener's completion.
 
 
 ## Usage Examples
+
+All dispatcher functions' demo can be found in [Example Code](https://github.com/go-study-lab/event/tree/master/examples).
+
+This section will showcase how to define event and listener, then dispatch/publish an event.
+
+1. Define an `UserCreated` event.
+
+```go
+type UserCreated struct {
+	UserId   int
+	UserName string
+	Tx       *Tx
+}
+
+type Tx struct {
+	// Mock as a DB transaction
+	DSN string
+	Tid int64
+}
+
+func (*UserCreated) EventName() string {
+	return "UserCreated"
+}
+
+func UserCreatedEvent(e *UserCreated) *event.Event {
+	return event.NewEvent(e)
+}
+```
+
+2. Define corresponding  listener for `UserCreated` event.
+
+```go
+type UserCreatedListener struct {
+}
+
+func (*UserCreatedListener) EventHandler() event.Handler {
+	return func(e *event.Event) {
+		var eData *UserCreated
+		var ok bool
+
+		if eData, ok = e.EventData().(*UserCreated); !ok {
+			fmt.Println("can not convert event data to type *UserCreated")
+			return
+		}
+
+		fmt.Printf("event data, userId:%d, userName:%s, Tx:%p \n", eData.UserId, eData.UserName, eData.Tx)
+	}
+}
+
+// When we want to use a same
+// DB transaction in event trigger and listener to  get ACID assurance, then
+// AsyncProcess must return false.
+func (*UserCreatedListener) AsyncProcess() bool {
+	return false
+}
+```
+
+3. Bind event and listener in init func.
+```go
+func init() {
+    eventDispatcher := event.Dispatcher()
+    eventDispatcher.Subscribe(UserCreatedEvent(new(UserCreated)), new(UserCreatedListener))
+}
+```
+4. Publish/Dispatch event
+```go
+func PublishCreateUserEvent() {
+	user := &User{
+		UserId:   1,
+		UserName: "KK",
+	}
+	tx := &domainevent.Tx{DSN: "localhost:3306/test_db", Tid: 1}
+	fmt.Printf("Tx in envet trigger: %p \n", tx)
+
+	// assume use tx to create user, then publish a userCreated event
+	event.Dispatcher().Dispatch(event.NewEvent(&domainevent.UserCreated{
+		UserId:   user.UserId,
+		UserName: user.UserName,
+		Tx:       tx, // in event handler, we can use this tx to execute other db operation
+		// in the same transaction , this method will ensure event trigger and listener as
+		// an atomically processed unit in system.
+	}))
+}
+
+func main() {
+    PublishCreateUserEvent()
+}
+```
+You can find this example's code in [Example Code](https://github.com/go-study-lab/event/tree/master/examples).
